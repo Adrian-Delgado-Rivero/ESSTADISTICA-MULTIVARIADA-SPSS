@@ -1,0 +1,93 @@
+*##################ANALISIS DE CORRESPONDENCIA########################################
+
+*1.///////////////////////////ABRIR BASE DE DATOS//////////////////////////////////
+
+GET
+  FILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\sociologos\correspondencias1.SAV'.
+DATASET NAME ConjuntoDatos1 WINDOW=FRONT.
+
+*2.///////////////////////ANALISIS///////////////////////
+
+*2.1.  Tabla de frecuencias para obtener el rango de las variables
+
+FREQUENCIES VARIABLES=preocupaciones estadocivil
+  /ORDER=ANALYSIS.
+
+*2.2    Analsis de correspondencia
+n° de dimenciones:     3-1=2   
+                                                     //obtenidos esos valores del rango de la variable con menos categorias
+Measure::                        medida de distancia             Chi-cuadrado
+Normalization::                metodo de normalizacion       Simetrico
+
+
+CORRESPONDENCE TABLE=estadocivil(1 3) BY preocupaciones(1 4)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20) RPOINTS(20) CPOINTS(20) TRROWS(20) TRCOLUMNS(20).
+
+
+*TABLA DE CORRESPONDENCIA
+Interseccion correspondinete entre las categorias
+
+*PERFILES FILA Y COLUMNA
+Porcentaje de las correspondencias
+
+*RESUMEN
+inercia de las dimenciones
+Chi-cuadrado    +        sig
+Proporcion de inercia...por dimenciones
+Desv. Estandar    +    correlacion
+
+*PUNTOS FILA Y COLUMAN GENERALES
+Masa =%del total (visto en perfiles)
+Masa e inercia por categora
+La dimencion en la inercia del punto
+
+*Con el graafico de filas y columnas podemos sacar las conclusiones finales de la correlacion
+
+*##################ANALISIS DE CORRESPONDENCIA MULTIPLES##############
+
+
+
+*1.///////////////////////////ABRIR BASE DE DATOS//////////////////////////////////
+
+GET
+  FILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\sociologos\correspondencias2.SAV'.
+DATASET NAME ConjuntoDatos1 WINDOW=FRONT.
+
+*2.///////////////////////ANALISIS///////////////////////
+
+*Todas las variables son nominales m´ultiples
+*Un conjunto
+*Definir
+
+*Ponderacion =1
+metodo de normalizacion:      simetrico
+Boton resultados
+            Medidas discriminantes
+            Correlaciones de las variables originales
+            Cuantificaciones y contribuciones de las categorias         
+Boton Graficos de variable:
+            Graficos por categorias
+            Graficos de categorias conjuntas
+Graficos de objeto:
+
+MULTIPLE CORRES VARIABLES=preocupaciones estadocivil sexo
+  /ANALYSIS=preocupaciones(WEIGHT=1) estadocivil(WEIGHT=1) sexo(WEIGHT=1) 
+  /MISSING=preocupaciones(PASSIVE,MODEIMPU) estadocivil(PASSIVE,MODEIMPU) sexo(PASSIVE,MODEIMPU) 
+  /DIMENSION=2
+  /NORMALIZATION=SYMMETRICAL
+  /MAXITER=100
+  /CRITITER=.00001
+  /PRINT=CORR DESCRIP(preocupaciones estadocivil sexo) DISCRIM OCORR QUANT(preocupaciones 
+    estadocivil sexo) 
+  /PLOT=OBJECT(20) CATEGORY(preocupaciones estadocivil sexo) (20) JOINTCAT(preocupaciones 
+    estadocivil sexo) (20) DISCRIM (20).
+
+
+
+*Con el graafico de filas y columnas podemos sacar las conclusiones finales de la correlacion
+*Tabla de correlaciones
