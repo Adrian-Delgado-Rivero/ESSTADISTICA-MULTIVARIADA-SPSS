@@ -1,0 +1,317 @@
+*                                                    FACTOR
+
+
+*1.-############################  abrimos la base de datos  FACTORIAL-############################ 
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\sociologos\factorial.sav '.
+
+*2 ########################## Analisis factorial########################## ##########################
+*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                INFOFRMACION
+* El analisis factorial se usa en:
+ +reduccion de datos para IDENTIFICAR un pequeño grupo de FACTORES que expliquen lamayor parte de la
+     varianza observada de un numero mayor de varaibles manifestadas
++Generar Hipotesis sobre: 
+        mecanismos causales
+        inspeccionar variables SUBSIGUIENTES
+
+*se obtiene una MATRIZ DE CORRELACIONES, el determinante, la inversa de las variables
+    matriz de correlaciones reducida (incluye la anti imagen)
+
+*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ESTRUCTURA  DEL CODIGO 
+1)Instruccion
+2)variables 
+3)Excluir segun                                                             
+                                                                (  /MISSING LISTWISE )
+4)analizar                                                       
+                                                              (/ANALYSIS v1 v2 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17)
+5)variable de seleccion     
+                                                                (  /SELECT=pais('1'))
+6)Descriptivos, matrices
+         (  /PRINT UNIVARIATE INITIAL CORRELATION SIG DET KMO INV REPR AIC EXTRACTION ROTATION FSCORE)
+7) Formato de presentacion de los coeficientes
+            ( /FORMAT SORT BLANK(.10))
+8)Graficos
+                                                                  ( /PLOT ROTATION)
+9)  extraer: iteraciones y factor o autovalor                  
+                                                                 (  /CRITERIA MINEIGEN(1) ITERATE(25))
+10)  metodo de extraccion                    
+                                                                 (  /EXTRACTION PC)
+11)  # max de iteraciones para convergencia    /menu rotacion       
+                                                                  (/CRITERIA ITERATE(25))
+12) ROTACION                        
+                                                                ( /ROTATION VARIMAX)
+13) Guardar puntuacionesfactoriales como varaibles    
+                                                                ( /SAVE REG(ALL))
+14)METODO                             
+                                                                (  /METHOD=CORRELATION.)
+
+*-------------------------------------------------FORMATO GENERAL________________________________________                                                                
+
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING MEANSUB 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /SELECT=pais('1')
+  /PRINT UNIVARIATE INITIAL CORRELATION EXTRACTION ROTATION FSCORE
+  /FORMAT SORT BLANK(.10)
+  /PLOT EIGEN ROTATION
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /SAVE REG(ALL)
+  /METHOD=CORRELATION.
+*_______________________________________ _______________________________________ _______________________________________ 
+*________________________________________________
+USAR EL SIGUIENTE CODIGO
+
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /PRINT INITIAL CORRELATION EXTRACTION ROTATION FSCORE
+  /FORMAT SORT
+  /PLOT ROTATION
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /METHOD=CORRELATION   o     COVARIANCE.
+*_______________________________________________
+
+*GLOSARIO
+COMUNALIDADES:
+    PROPORCIONDELA VARIANZA EXPLICADA * LOS FACTORES COMUNES EN UNA VARIABLE
+    PESOS FACTORIALES AL CUADRADO EN CADA UNA DE LAS FILAS
+ AUTOVALORES
+     porcentaje de varianza explicada * cada uno de lo factores // VARIABLES COMUNES QUE APORTAN MÁSO EXPLICAN LA VARIANZA TOTAL
+     
+
+*ANALISIS FACTORIAL:
+    +REDUCCION DE DIMENCIONES 
+    
+*MATRIZ DE LOS COMPONENETES
+    Que variable aporta más a que componente; para seleccionar que variables partciparan en el modelo
+    
+*  ////////////////////////////  ////////////////////////////  ////////////////////////////  //////////////////////////// 
+DESCRIPTIVOS
+ /PRINT UNIVARIATE INITIAL CORRELATION SIG DET KMO INV REPR AIC EXTRACTION ROTATION FSCORE
+
+*        Estadisiticos
+            UNIVARIATE                Descriptvios univariados
+            INITIAL                         Solucion inicial
+ 
+*       Matriz de correlaciones 
+            CORRELATION            coeficientes
+            SIG                             nivel de significacion
+            DET                            determinante
+            KMO                           KMO y prueba de esfericidad de Bartlet
+            INV                             inverso
+            REPR                         reproducida
+            AI                               anti imagen 
+
+* /PRINT EXTRACTION ROTATION
+        ROTACION
+            ROTATION                  solucion con  rotacion
+        Extaccion
+            EXTRACTION            solucion sin rotar
+
+
+*////////////////////////////  ////////////////////////////  ////////////////////////////  ////////////////////////////
+EXTRACCION
+    Extraccion      
+              /CRITERIA MINEIGEN(1) ITERATE(25)
+                   MINEIGEN(1)     autovalore mayores que (1)     
+                   ITERATE(25)      numero maximo de iteraciones para convergencia  (25) 
+             /CRITERIA FACTORS(5) ITERATE(25)
+                   FACTORS(5)      Numero fijo de factores(5)
+           
+*    Metodo de Extraccion
+                    /EXTRACTION PC                    componentes principales
+                   /EXTRACTION PAF                  factorizacion ejes principales
+                   /EXTRACTION ALPHA              factorizacion alfa
+                  /EXTRACTION IMAGE               factorizacion por imagenes
+          #No se puede analizar matrices ed covarianzas o correlaciones en :
+                   /EXTRACTION ULS                  minimos cuadrados no ponderados
+                   /EXTRACTION GLS                  minimos cuadrados generalizados
+                   /EXTRACTION ML                    maximos verosimilitud 
+ 
+*    Mostrar
+                  /PRINT EXTRACTION            solucion factorial sin rotar
+                  /FORMAT SORT
+                  /PLOT EIGEN                        graficode sedientacion 
+                  
+
+*    Analizar
+                 /METHOD=CORRELATION            Matriz de correlaciones
+                 /METHOD=COVARIANCE              Matriz de covarianzas
+                       
+*///////////////////////////// //////////////////////////////////////////////////////// ////////////////////////////////////////////////////////
+ROTACION
+    
+*    METODO Y NUMERO MAXIMO DE CONVERGENCIA 
+               /ROTATION NOROTATE                            NINGUNO
+              
+*             /CRITERIA ITERATE(25)                           VARIMAX
+              /ROTATION VARIMAX
+              
+*             /CRITERIA ITERATE(25) DELTA(0)            OBLIMIN DIRECTO
+              /ROTATION OBLIMIN
+            
+*             /CRITERIA ITERATE(25)                            QUARTIMAX
+              /ROTATION QUARTIMAX
+              
+*             /CRITERIA ITERATE(25)                            EQUAMAX
+              /ROTATION EQUAMAX
+            
+*             /CRITERIA ITERATE(25)                            PROMAX //Kappa (4)
+              /ROTATION PROMAX(4)
+  
+ *     MOSTRAR
+            /PLOT ROTATION                                       Graficos de carga    
+             /PRINT ROTATION                                     solucion rotada
+
+
+*///////////////////////////// /////////////////////////////// /////////////////////////////// /////////////////////////////// /////////////////////////////// //
+PUNTUACIONES FACTORIALES
+
+*       GUARDAR  COMO VARIABLES
+            Metodo
+              /SAVE REG(ALL)                          Regresion
+             /SAVE BART(ALL)                         Barttett
+              /SAVE AR(ALL)                            Anderson-Rubin
+            
+*        MOSTRAR MATRIZ DE COEFICIENTE E LAS PUNTUACIONES FACTORIALES
+              /PRINT FSCORE
+*///////////////////////////// /////////////////////////////// /////////////////////////////// /////////////////////////////// /////////////////////////////// //
+OPCIONES
+
+*Valores Perdidos
+    /MISSING LISTWISE                    excluir casos segun lista
+    /MISSING PAIRWISE                     excluir casos segun pareja
+    /MISSING MEANSUB                     remplazar por la media 
+    
+*Formato de presentacion de los coeficientes          /FORMAT SORT BLANK(.10)
+    Ordenar por tamaños
+      /FORMAT SOR
+    suprimir pequeños coeficientes//valor absoluto bajo (10)
+    /FORMAT  BLANK(.10)
+*///////////////////////////// //////////////////////////////// ///////////////////////////////// ///////////////////////////////////// ////////////////////////////////// /
+*VARIABLE DE SECCION  variable ("valor")
+  /SELECT=pais('1')
+*///////////////////////////// //////////////////////////////// ///////////////////////////////// ///////////////////////////////////// ////////////////////////////////// /  
+
+*3-#######################EJERCIOCIO DE CLASE#############################
+
+*3.1) analis factorial sin rotacion 
+    instrucciones:
+    Excluir por lista, Ordenar por tamaño, sin varaible de selccion, Analizar matriz de correlacion
+    Extraccion: componentes principales, Autovalores mayor a (1), # max de iteraciones (25), Metodo: componentes principales
+     Rotacion: Ninguna
+    
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /FORMAT SORT
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /ROTATION NOROTATE
+  /METHOD=COVARIANCE.
+
+*3.2) analisis factorial con rotacion
+        nuevas instrucciones: Solucion inicial, Mostrar: Solucion sin rotar
+        mostrar: solucion con rotacion, grafico de cargas, metodo de rotacion:    VARIMAX, 
+                rotacion:    # Max de iteraciones para convergencia (25)
+            
+
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /PRINT INITIAL EXTRACTION ROTATION
+  /FORMAT SORT
+  /PLOT ROTATION
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /METHOD=CORRELATION.
+
+*3.4)
+        Cambio de instruccion:
+        Autovalores mayor a (1)            por        #  fijo de factores (5)
+
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /PRINT INITIAL EXTRACTION ROTATION
+  /FORMAT SORT
+  /PLOT ROTATION
+  /CRITERIA FACTORS(5) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /METHOD=CORRELATION.
+
+*3.5)
+        instruccion: incluir la matriz de coef. de correlacion
+        cambio de instruccion:
+        #  fijo de factores (5)          por        Autovalores mayor a (1)   
+
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /PRINT INITIAL CORRELATION EXTRACTION ROTATION
+  /FORMAT SORT
+  /PLOT ROTATION
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /METHOD=CORRELATION.
+
+*3.6)
+        cambio de instruccion 
+        Analizar matriz de correlacion             por            Analizar matriz de covarianzas 
+
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /PRINT INITIAL CORRELATION EXTRACTION ROTATION
+  /FORMAT SORT
+  /PLOT ROTATION
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /METHOD=COVARIANCE.
+
+
+*3.7)
+    instruccion: 
+        Grafico de sedimentacion 
+        mostrar matriz de los coeficientes de las puntuaciones factoriales
+        
+FACTOR
+  /VARIABLES v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /MISSING LISTWISE 
+  /ANALYSIS v1 v2 v4 v5 v7 v6 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+  /PRINT INITIAL FSCORE ROTATION
+  /FORMAT SORT BLANK(.10)
+  /PLOT EIGEN ROTATION
+  /CRITERIA MINEIGEN(1) ITERATE(25)
+  /EXTRACTION PC
+  /CRITERIA ITERATE(25)
+  /ROTATION VARIMAX
+  /METHOD=CORRELATION.
+*__________________________________________________________________________________________________________
+
+
+
