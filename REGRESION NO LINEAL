@@ -1,0 +1,67 @@
+*###############################REGRECION NO  LINEAL#############################
+
+
+*1./////////////ABRIR BASE DE DATOS///////////////////////////////////////////
+
+GET
+  FILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\sociologos\regresion.sav'.
+DATASET NAME ConjuntoDatos1 WINDOW=FRONT.
+
+*2. 
+* Estimación curvilínea.
+
+TSET MXNEWVAR=20.
+CURVEFIT
+  /VARIABLES=consumo WITH peso
+  /CONSTANT
+  /MODEL=LINEAR LOGARITHMIC INVERSE QUADRATIC CUBIC COMPOUND POWER S GROWTH EXPONENTIAL 
+  /PRINT ANOVA
+  /PLOT FIT
+  /SAVE=PRED RESID .
+
+*///////////                    solo seleccionamos un tipo de modelo////////////////////////////////////////////////////////////////////
+* Estimación curvilínea.
+TSET MXNEWVAR=2.
+CURVEFIT
+  /VARIABLES=consumo WITH peso
+  /CONSTANT
+  /MODEL=INVERSE 
+  /PRINT ANOVA
+  /PLOT FIT
+  /SAVE=PRED RESID .
+
+
+
+*2.1explorar //////// seleccionamos el error de prediccion gurdado para ver la prueba de normalidad
+
+
+EXAMINE VARIABLES=ERR_1
+  /PLOT BOXPLOT HISTOGRAM NPPLOT
+  /COMPARE GROUPS
+  /MESTIMATORS HUBER(1.339) ANDREW(1.34) HAMPEL(1.7,3.4,8.5) TUKEY(4.685)
+  /PERCENTILES(5,10,25,50,75,90,95) HAVERAGE
+  /STATISTICS DESCRIPTIVES EXTREME
+  /CINTERVAL 95
+  /MISSING LISTWISE
+  /NOTOTAL.
+
+
+*################REGRESION LOGISTICA####################################################
+
+*1./////////////ABRIR BASE DE DATOS///////////////////////////////////////////
+
+GET
+  FILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\sociologos\logistica2.sav'.
+DATASET NAME ConjuntoDatos3 WINDOW=FRONT.
+
+
+*Regresio logistica
+
+DATASET ACTIVATE ConjuntoDatos3.
+LOGISTIC REGRESSION VARIABLES nodos
+  /METHOD=ENTER edad acido 
+  /SAVE=PRED PGROUP COOK LEVER DFBETA RESID LRESID SRESID ZRESID DEV
+  /CLASSPLOT
+  /CASEWISE OUTLIER(2)
+  /PRINT=GOODFIT
+  /CRITERIA=PIN(0.05) POUT(0.10) ITERATE(20) CUT(0.5).
