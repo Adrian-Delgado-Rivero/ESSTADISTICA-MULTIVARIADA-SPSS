@@ -1,0 +1,187 @@
+*####################abrimos la base de datos  ventas de vehiculos
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\Ventas-vehiculos.sav '. 
+
+*seleccionar
+
+
+USE ALL.
+COMPUTE filter_$=(tipo = 0 & ventas > 100).
+VARIABLE LABELS filter_$ 'tipo = 0 & ventas > 100 (FILTER)'.
+VALUE LABELS filter_$ 0 'Not Selected' 1 'Selected'.
+FORMATS filter_$ (f1.0).
+FILTER BY filter_$.
+EXECUTE.
+
+*cluster jerarquico ////// distancias
+***casos.
+DATASET DECLARE D0.5063866661776171.
+PROXIMITIES   precio motor CV pisada ancho largo peso_neto deposito mpg
+  /MATRIX OUT(D0.5063866661776171)
+  /VIEW=CASE
+  /MEASURE=SEUCLID
+  /PRINT NONE
+  /ID=modelo
+  /STANDARDIZE=VARIABLE Z.
+CLUSTER
+  /MATRIX IN(D0.5063866661776171)
+  /METHOD SINGLE
+  /ID=modelo
+  /PRINT SCHEDULE
+  /PRINT DISTANCE
+  /PLOT DENDROGRAM.
+Dataset Close D0.5063866661776171.
+***vvariables (si son binarias)).
+DATASET DECLARE D0.7979501732652248.
+PROXIMITIES   precio motor CV pisada ancho largo peso_neto deposito mpg
+  /MATRIX OUT(D0.7979501732652248)
+  /VIEW=VARIABLE
+  /MEASURE=SEUCLID
+  /PRINT NONE
+  /STANDARDIZE=VARIABLE Z.
+CLUSTER
+  /MATRIX IN(D0.7979501732652248)
+  /METHOD SINGLE
+  /PRINT SCHEDULE
+  /PRINT DISTANCE
+  /PLOT DENDROGRAM.
+Dataset Close D0.7979501732652248.
+*___________________________________________________
+
+*K medias
+Variables numericas//////// centros-medias
+
+FILTER OFF.
+USE ALL.
+EXECUTE.
+
+USE ALL.
+COMPUTE filter_$=(uniform(1)<=.10).
+VARIABLE LABELS filter_$ 'Aproximadamente 10% de los casos (SAMPLE)'.
+FORMATS filter_$ (f1.0).
+FILTER  BY filter_$.
+EXECUTE.
+
+* Generador de gráficos.
+GGRAPH
+  /GRAPHDATASET NAME="graphdataset" VARIABLES=peso_neto motor MISSING=LISTWISE REPORTMISSING=NO
+  /GRAPHSPEC SOURCE=INLINE
+  /FITLINE TOTAL=NO.
+BEGIN GPL
+  SOURCE: s=userSource(id("graphdataset"))
+  DATA: peso_neto=col(source(s), name("peso_neto"))
+  DATA: motor=col(source(s), name("motor"))
+  GUIDE: axis(dim(1), label("Peso neto"))
+  GUIDE: axis(dim(2), label("Tamaño del motor"))
+  GUIDE: text.title(label("Dispersión Simple de Tamaño del motor por Peso neto"))
+  ELEMENT: point(position(peso_neto*motor))
+END GPL.
+
+QUICK CLUSTER precio motor CV pisada ancho largo peso_neto deposito mpg
+  /MISSING=LISTWISE
+  /CRITERIA=CLUSTER(2) MXITER(10) CONVERGE(0)
+  /METHOD=KMEANS(NOUPDATE)
+  /SAVE CLUSTER
+  /PRINT ID(modelo) INITIAL ANOVA CLUSTER DISTAN.
+
+*3 clsuters
+
+QUICK CLUSTER precio motor CV pisada ancho largo peso_neto deposito mpg
+  /MISSING=LISTWISE
+  /CRITERIA=CLUSTER(3) MXITER(10) CONVERGE(0)
+  /METHOD=KMEANS(NOUPDATE)
+  /SAVE CLUSTER
+  /PRINT ID(modelo) INITIAL ANOVA CLUSTER DISTAN.
+
+*____________________________________
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\Telecomunicaciones1.sav '. 
+
+*bietapíco
+
+*unificar: transformar:::::ln
+
+COMPUTE LN_largadistancia=LN(larga_distancia_mes).
+EXECUTE.
+
+*estandarizamos
+
+DESCRIPTIVES VARIABLES=LN_largadistancia
+  /SAVE
+  /STATISTICS=MEAN STDDEV MIN MAX.
+
+COMPUTE LN_equipo_mes=LN(equipo_mes).
+EXECUTE.
+
+COMPUTE LN_Tarjeta_mes=LN(Tarjeta_mes).
+EXECUTE.
+
+COMPUTE LN_inhalámbrico=LN(inhalámbrico_mes).
+EXECUTE.
+
+COMPUTE LN_llamadasgratuitas=LN(llamadas_gratuitas_per).
+EXECUTE.
+
+DESCRIPTIVES VARIABLES= LN_equipo_mes LN_Tarjeta_mes LN_inhalámbrico LN_llamadasgratuitas
+  /SAVE
+  /STATISTICS=MEAN STDDEV MIN MAX.
+*___
+
+DESCRIPTIVES VARIABLES=  lineas_múltiples mensaje_voz servicio_busca internet identificador_llamada llamada_espera 
+    desvio_llamadas llamada_a_tres facturación_electrónica categoria_cliente rotación_mes
+  /SAVE
+  /STATISTICS=MEAN STDDEV MIN MAX.
+
+SAVE OUTFILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\SINTAXIS\CLUSTERS\TelecomunicacionesZ.sav'
+  /COMPRESSED.
+
+QUICK CLUSTER ZLN_equipo_mes ZLN_Tarjeta_mes ZLN_inhalámbrico ZLN_llamadasgratuitas 
+    Zlineas_múltiples Zmensaje_voz Zservicio_busca Zinternet Zidentificador_llamada Zllamada_espera 
+    Zdesvio_llamadas Zllamada_a_tres Zfacturación_electrónica Zcategoria_cliente Zrotación_mes
+  /MISSING=LISTWISE
+  /CRITERIA=CLUSTER(3) MXITER(20) CONVERGE(0)
+  /METHOD=KMEANS(UPDATE)
+  /PRINT INITIAL ANOVA CLUSTER DISTAN.
+*guardamos cluster
+
+QUICK CLUSTER ZLN_equipo_mes ZLN_Tarjeta_mes ZLN_inhalámbrico ZLN_llamadasgratuitas 
+    Zlineas_múltiples Zmensaje_voz Zservicio_busca Zinternet Zidentificador_llamada Zllamada_espera 
+    Zdesvio_llamadas Zllamada_a_tres Zfacturación_electrónica Zcategoria_cliente Zrotación_mes
+  /MISSING=LISTWISE
+  /CRITERIA=CLUSTER(3) MXITER(20) CONVERGE(0)
+  /METHOD=KMEANS(UPDATE)
+  /SAVE CLUSTER
+  /PRINT INITIAL ANOVA CLUSTER DISTAN.
+
+*guardamos la distancia
+
+QUICK CLUSTER ZLN_equipo_mes ZLN_Tarjeta_mes ZLN_inhalámbrico ZLN_llamadasgratuitas 
+    Zlineas_múltiples Zmensaje_voz Zservicio_busca Zinternet Zidentificador_llamada Zllamada_espera 
+    Zdesvio_llamadas Zllamada_a_tres Zfacturación_electrónica Zcategoria_cliente Zrotación_mes
+  /MISSING=LISTWISE
+  /CRITERIA=CLUSTER(3) MXITER(20) CONVERGE(0)
+  /METHOD=KMEANS(UPDATE)
+  /SAVE CLUSTER DISTANCE
+  /PRINT INITIAL ANOVA CLUSTER DISTAN.
+
+
+* Generador de gráficos.
+GGRAPH
+  /GRAPHDATASET NAME="graphdataset" VARIABLES=QCL_2 QCL_3 MISSING=LISTWISE REPORTMISSING=NO
+  /GRAPHSPEC SOURCE=INLINE.
+BEGIN GPL
+  SOURCE: s=userSource(id("graphdataset"))
+  DATA: QCL_2=col(source(s), name("QCL_2"), unit.category())
+  DATA: QCL_3=col(source(s), name("QCL_3"))
+  DATA: id=col(source(s), name("$CASENUM"), unit.category())
+  GUIDE: axis(dim(1), label("Número de caso de clúster"))
+  GUIDE: axis(dim(2), label("Distancia del caso desde su centro del clúster de clasificación"))
+  GUIDE: text.title(label("Diagrama de cajas Simple de Distancia del caso desde su centro del ",
+    "clúster de clasificación por Número de caso de clúster"))
+  SCALE: linear(dim(2), include(0))
+  ELEMENT: schema(position(bin.quantile.letter(QCL_2*QCL_3)), label(id))
+END GPL.
+
+
