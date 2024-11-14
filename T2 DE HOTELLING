@@ -1,0 +1,226 @@
+*                                                 ######################
+                                                  #  T2  de HOTELLING     #
+                                                  ######################
+
+*_____________________________________________________________________________________
+
+*1. IMPORTAMOS base de datos Variedades.xlsx 
+
+GET DATA
+  /TYPE=XLSX
+  /FILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\bases de datos\VARIEDADES.xlsx'
+  /SHEET=name 'VARIEDADES'
+  /CELLRANGE=FULL
+  /READNAMES=ON
+  /DATATYPEMIN PERCENTAGE=95.0
+  /HIDDEN IGNORE=YES.
+EXECUTE.
+DATASET NAME Variedades WINDOW=FRONT.
+
+*Para abrir la base.sav
+ GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\datos.sav '.
+
+
+*2            CONDICIONES
+                  *##########################################################
+                               PARA HAACER EL ANALISIS SE DEBE CUMPLIR:
+                                                Normalidad
+                                                Independencia estadistica
+                                                homoscedasticidad
+                   #########################################################
+
+*_____________________________________________________________________________________________
+2.1) .NORMALIDAD.
+
+    *         Explorar                             Examina la normalidad de forma conjunta 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     VARIABLES:LS AS LP AP
+     FACTOR: VARIEDAD
+     INTERVALO DE CONFIANZA: 95%
+     GRAFICOS: NPPLOT(con prueba de normalidad), BOXPLOT (diagram de caja), STEMLEAF (tallo y hoja),/
+             HISTOGRAM (histograma)
+     ESTADISTICOS: Descriptivos
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  EXAMINE VARIABLES=LS AS LP AP BY VARIEDAD
+  /PLOT BOXPLOT STEMLEAF HISTOGRAM NPPLOT
+  /COMPARE GROUPS
+  /STATISTICS DESCRIPTIVES
+  /CINTERVAL 95
+  /MISSING LISTWISE
+  /NOTOTAL.
+
+
+        *   K-S de 1 muestra                    Analisa la normalidad de manera individual  
+            DISTRIBUCION DE PRUEBA: normal
+            VARIABLES:LS AS LP AP
+                    *PASO 1) seleccionamos el valor de la Variable Factor: Para hacer el analisis por sub grupos
+                                    VARIEDAD=1
+                    
+                    USE ALL.
+                    COMPUTE filter_$=(VARIEDAD = 1).
+                    VARIABLE LABELS filter_$ 'VARIEDAD = 1 (FILTER)'.
+                    VALUE LABELS filter_$ 0 'Not Selected' 1 'Selected'.
+                    FORMATS filter_$ (f1.0).
+                    FILTER BY filter_$.
+                    EXECUTE.
+                    
+                    *PASO 2)  ejecutamos el test
+                    
+                    NPAR TESTS
+                      /K-S(NORMAL)=LS AS LP AP 
+                      /MISSING ANALYSIS.
+
+*    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /Sig >0.05    ==> Ho: Normalidad es correcta                              /
+   / Graficos QQ sobre la linea   ==> Ho: Normalidad es correcta      /
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  
+
+*2.2) DESELECCIONAMOS PARA CONTINUAR.
+FILTER OFF.
+USE ALL.
+EXECUTE. 
+
+
+*2.3) MLG MULTIVARIANTE            con variable factor
+        VARIABLES: LS AS LP AP BY VARIEDAD 
+        GRAFICOS: residuos
+        NIVEL DE SIGNIFICACION: 0.05
+        SUMA CUADRADOS:  tipo 3
+        INTERCEPTO: incluido                        #Intercepto  es "A" de Y=A+BX 
+       ESTADISTICOS:  DESCRIPTIVE (descriptivos),  PARAMETER (estimacion de los parametros), 
+                                   EST(SSCP)  [matrices SSCP], RSSCP [matriz SSCP de residuos], 
+                                   HOMOGENEITY (prueba de homogenidad)
+ 
+*# SSCP = Matriz de suma de cuadrados
+  #RSSCP = Matriz de residuos de suma de cuadrados
+  #HOMOGENEITY=prueba de Levene de igualdad de varianzas (SOLO SI SE USA FACTOR)
+
+
+GLM LS AS LP AP BY VARIEDAD
+  /METHOD=SSTYPE(3)
+  /INTERCEPT=INCLUDE
+  /PRINT=DESCRIPTIVE PARAMETER TEST(SSCP) RSSCP HOMOGENEITY
+  /PLOT=RESIDUALS 
+  /CRITERIA=ALPHA(.05)
+  /DESIGN= VARIEDAD.
+
+ *     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        Prueba de Box: Igualdad de las matrices de covarianzas  -------sig< 0.05 ==> se rechaza             /
+        Prueba de esfericidad de Bartlett                                      -------sig< 0.05 ==> se rechaza          /
+        Pruebas Multivariantes                                                                                                          /
+        Prueba de Levene              sig< 0.05 ==>  se rechaza para todos menos para ancho de sepalo /
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+*___________________________________________________________________________________________
+                                        ############################################
+                                        *Si n> 30........asumimos Distribucion Normal
+                                        *existen altertativas con o sin homogeneidad de varianza
+                                        ##############################################
+
+
+*3.)        CONTRASTES                1     MUESTRA
+    Nulidad del vector de medias 
+    Transfromacion    Tvi=    vi    -    M[Vi]
+
+* 3.1)OBTENEMOS LAS MEDIAS Y REDONDEMOS
+
+DESCRIPTIVES VARIABLES=LS AS LP AP
+  /STATISTICS=MEAN.
+
+*M[LS] =5.8367    :::::5.84
+M[AS] = 3.0580    :::::3
+M[LP] = 3.7580    ::::: 3.76
+M[AP] = 1.1993    ::::: 1.2
+
+*3.2) TRANSFORMAMOS         Variable -  media redondeada
+
+COMPUTE LST= LS - 5.75.
+EXECUTE.
+
+COMPUTE AST= AS - 3.
+EXECUTE.
+
+COMPUTE LPT= LP - 4.
+EXECUTE.
+
+COMPUTE APT= AP - 2.
+EXECUTE.
+
+*3.3)MLG multivariante                    sin factor  con las variables transfromadas
+        VARIABLES:  LST AST LPT APT             [Se obvia el factor, por lo tanto se omite]
+        INTERCEPTO: incluido
+        SIG: 0.5
+        SSC TIPO: 3
+        ESTADISTICOS:  DESCRIPTIVE (descriptivos),  PARAMETER (estimacion de los parametros), 
+                                   EST(SSCP)  [matrices SSCP], RSSCP [matriz SSCP de residuos], 
+                                   HOMOGENEITY (prueba de homogenidad) TEST(MMATRIX) [matriz de trasformacion]
+                                   GEF (funcion estimable general)                               
+       GRAFICOS: residuos
+ 
+
+GLM LST AST LPT APT
+  /METHOD=SSTYPE(3)
+  /INTERCEPT=INCLUDE
+  /PRINT=DESCRIPTIVE PARAMETER TEST(SSCP) RSSCP TEST(MMATRIX) HOMOGENEITY GEF
+  /PLOT=RESIDUALS 
+  /CRITERIA=ALPHA(.05).
+
+ *             //////////////////////////////////////////////////////////////////////////////////////////
+                            rechazar las medias planteadas 
+                Multivariantes:            Sig<0.05
+                 Ho:     se rechaza de manera conjunta 
+                Efectos inter-sujetos   Sig<0.05
+                Ho:        se rechaza que las medias sean el valor que dimos
+                ///////////////////////////////////////////////////////////////////////////////////////////
+                
+*___________________________________________________________________________________________
+
+*4.    COMPARACION ENTRE GRUPOS        2 MUESTRAS
+
+*4.1)prueaba T para igualda de varainzas e igualdad de medias
+            GRUPOS: 1, 2
+            VARIABLES: LS AS LP AP
+            INTERVALOS DE CONFIANZA: 0.95
+
+
+T-TEST GROUPS=VARIEDAD(1 2)
+  /MISSING=ANALYSIS
+  /VARIABLES=LS AS LP AP
+  /CRITERIA=CI(.95).
+
+*//////////////////////////////////////////////////////////////////////////////////
+Prueba de Levene                            Sig<0.05
+Ho: Se rechaza/        /no tiene varainzas iguales
+Prueba T para igualda de medias        Sig<0.05
+Ho: se rechaza //no exite igualdad de medias
+//////////////////////////////////////////////////////////////////////////////////////
+
+*           GRUPOS: 1, 3
+            VARIABLES: LS AS LP AP
+            INTERVALOS DE CONFIANZA: 0.95
+
+T-TEST GROUPS=VARIEDAD(1 3)
+  /MISSING=ANALYSIS
+  /VARIABLES=LS AS LP AP
+  /CRITERIA=CI(.95).
+
+*//////////////////////////////////////////////////////////////////////////////////
+Prueba de Levene                            Sig<0.05
+Ho: Se rechaza/        /no tiene varainzas iguales
+Prueba T para igualda de medias        Sig<0.05
+Ho: se rechaza //no exite igualdad de medias
+//////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
