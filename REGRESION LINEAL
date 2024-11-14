@@ -1,0 +1,116 @@
+*###############################REGRECION LINEAL#############################
+
+
+*1./////////////ABRIR BASE DE DATOS///////////////////////////////////////////
+
+GET
+  FILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\sociologos\regresion2.sav'.
+DATASET NAME ConjuntoDatos1 WINDOW=FRONT.
+
+*2. REGRESION LINEAL SIMPLE
+
+REGRESSION
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA
+  /CRITERIA=PIN(.05) POUT(.10)
+  /NOORIGIN 
+  /DEPENDENT salario
+  /METHOD=ENTER salini.
+
+*2. REGRESION LINEAL MULTIPLE
+
+REGRESSION
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA
+  /CRITERIA=PIN(.05) POUT(.10)
+  /NOORIGIN 
+  /DEPENDENT salario
+  /METHOD=ENTER salini expprev.
+
+*2.1     SUPUESTOS 
+
+*Linealidad        Sesgo de especificacion
+                                                        Omision de varibales independientes importantes
+                                                        Inclusion de variabels independientes irreleantes
+                                                        No linealidad
+                                                        Parametros cambiantes
+                                                        No aditividad....multicolinealidad
+                                                        
+*Independencia        Residuos autocorrelacionados
+
+*Homocedasticidad        (Varianza de residuos constante)
+
+*Normalidad                    (Residuos normalmente distribuidos)
+
+*No colinealidad                Multicolinealidad
+
+*///////////////////////////////
+
+*2.1.1    DIAGNOSTICO POR CASO
+Residuos atipicos
+
+*2.1.2    INDEPENDENCIA //    D-W
+Se asume independencia de residuos si los valores de D-W toma valores entre 1,5 y 2,5
+                                                        
+*2.1.3    HOMOCEDASTICIDAD        //        grafico
+        DEPENDENT        var dependiente (y)
+        ZPRED                Pronosticos tipificados
+        ZRESID                Residuos tipificados
+        DRESID                Residuos eliminados o corregidos//
+                                        Residuos de los casos no incluidos en la regresion//util para detectar casos o puntos de influencia
+         ADJRED                Pronosticos corregidos
+                                            Pronosticos efectuados en una ec. de regrec. que no incluye el caso pronosticado
+        SRESID                    Residuos estunderizados//distribuidos en un modelo  de P()  t de student con n-p-1 grados de libertad
+                                        P=n° de var independientes                                       
+        SRESID                    Residuos corregidos estunderizados
+Eje x: Zresid
+Eje y:    ZPred
+Si el diagrama de dispercion delata varianzas heterogeneas, se puede uzar una transformacion logaritmica o raiz cuadrada
+
+*2.1.4    NORMALIDAD
+histograma
+graf. de prob. normal            //explorar
+Eje y; Prob acumulada esperada
+Eje x: Prob. Acumulada observada
+
+*LINEALIDAD
+
+
+
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS CI(95) BCOV R ANOVA ZPP
+  /CRITERIA=PIN(.05) POUT(.10)
+  /NOORIGIN 
+  /DEPENDENT salario
+  /METHOD=ENTER salini expprev
+  /PARTIALPLOT ALL
+  /SCATTERPLOT=(*ZRESID ,*ZPRED)
+  /RESIDUALS DURBIN
+  /CASEWISE PLOT(ZRESID) OUTLIERS(3)
+  /SAVE RESID.
+
+
+
+*2.1.5    COLINEALIDAD
+F es sig pero los t no
+B >|1|
+Corr>0,9
+
+
+*3    LA SIGUIENTE REGREESION CONTIENE TODAS LAS OPCIONES MENCIONADAS EN EL TEXTO
+
+REGRESSION
+  /DESCRIPTIVES MEAN STDDEV CORR SIG N
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS CI(95) BCOV R ANOVA COLLIN TOL CHANGE ZPP
+  /CRITERIA=PIN(.05) POUT(.10)
+  /NOORIGIN 
+  /DEPENDENT salario
+  /METHOD=ENTER salini expprev
+  /PARTIALPLOT ALL
+  /SCATTERPLOT=(*ZRESID ,*ZPRED)
+  /RESIDUALS DURBIN
+  /CASEWISE PLOT(ZRESID) OUTLIERS(3)
+  /SAVE MAHAL COOK LEVER RESID DFBETA SDBETA DFFIT SDFIT COVRATIO.
