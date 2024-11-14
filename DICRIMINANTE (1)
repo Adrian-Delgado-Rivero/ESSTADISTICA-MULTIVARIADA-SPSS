@@ -1,0 +1,142 @@
+* Encoding: UTF-8.
+* analisis discriminante:
+*clasificacion de un conjunto de datos  basados en variables cuantitativas
+
+*ANALISIS DISCRIMINANTE CONDICIONES:   NORMALIDAD, TAMAÑOS DE GRUPOS CUASI HOMOGENEOS, SIN MULTICOLINEALIDAD 
+MODELO: Di=a+WX+WX+..+WX; donde W son las ponderaciones 
+VALIDACION DE RESULTADOS: R2
+ESTUDIO DE LOS ERRORES: mala clasificacion y no representabilidad
+
+
+*#####################################################################################
+*ABRIMOS ARCHIVO DISCRIMINANTE
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\sociologos\discriminate.sav '. 
+
+*FRECUENCIAS PARA UNA VISTA GENERAL DE LOS RANGOS
+
+FREQUENCIES VARIABLES=discriminate
+  /ORDER=ANALYSIS.
+
+*DICRIMINANTE
+
+DISCRIMINANT
+  /GROUPS=discriminate(1 3)
+  /VARIABLES=X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13
+  /ANALYSIS ALL
+  /SAVE=CLASS 
+  /PRIORS EQUAL 
+  /STATISTICS=MEAN STDDEV UNIVF BOXM TABLE 
+  /PLOT=COMBINED MAP 
+  /CLASSIFY=NONMISSING POOLED.
+
+*usa todos los estadisticos disponibles
+
+DISCRIMINANT
+  /GROUPS=discriminate(1 3)
+  /VARIABLES=X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13
+  /ANALYSIS ALL
+  /SAVE=CLASS 
+  /PRIORS EQUAL 
+  /STATISTICS=MEAN STDDEV UNIVF BOXM COEFF RAW CORR COV GCOV TCOV TABLE 
+  /PLOT=COMBINED MAP 
+  /CLASSIFY=NONMISSING POOLED.
+
+*LA PRUEBA BOX: lasmatrices de covarianzas son iguales o no
+LAMDA DE WIKS: 
+                los grupos forman fucniones de n grupos discriminados -1
+                significacia de las fucniones
+COEFICIENTES DE  FUNCION E CLASIFICACION
+                coeficientes de las funciones
+//////variables que serechazan laigualdad de medias                
+
+
+*usamos menos estadisticos 
+                
+DISCRIMINANT
+  /GROUPS=discriminate(1 3)
+  /VARIABLES= X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13
+  /ANALYSIS ALL
+  /SAVE=CLASS 
+  /PRIORS EQUAL 
+  /STATISTICS=MEAN STDDEV UNIVF BOXM RAW TABLE 
+  /PLOT=COMBINED MAP 
+  /CLASSIFY=NONMISSING POOLED.
+
+
+*solo variables significativas, hacen mejor la clasificacion
+             
+DISCRIMINANT
+  /GROUPS=discriminate(1 3)
+  /VARIABLES= X2  X9 X12
+  /ANALYSIS ALL
+  /SAVE=CLASS 
+  /PRIORS EQUAL 
+  /STATISTICS=MEAN STDDEV UNIVF BOXM RAW TABLE 
+  /PLOT=COMBINED MAP 
+  /CLASSIFY=NONMISSING POOLED.
+
+*#############observar en que % se clasifica correctamente las variables para decidir cuantas varaibles usar
+
+*usar metodo de seleccion por pasos
+
+DISCRIMINANT
+  /GROUPS=discriminate(1 3)
+  /VARIABLES=X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13
+  /ANALYSIS ALL
+  /SAVE=CLASS 
+  /METHOD=WILKS 
+  /FIN=3.84
+  /FOUT=2.71
+  /PRIORS EQUAL 
+  /HISTORY
+  /STATISTICS=MEAN STDDEV UNIVF BOXM TABLE 
+  /PLOT=COMBINED SEPARATE  MAP 
+  /CLASSIFY=NONMISSING POOLED.
+
+**/////////////////NOTA: USAR ESTA FUNCION ANTES DE USAR UNA 2DA BASE E DATOS, SI NECESITAREMOS TRABAJAR SOBRE LO YA HECHO
+
+TITLE PRACTICA DISCIMINANTE 1 ADRIAN DELGADO.
+
+SAVE OUTFILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\tareas\DISCRIMINANTE1 27_oct'
+/COMPRESSED.
+*////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\sociologos\discriminate2.sav '. 
+
+
+*DISCRIMMINANTE PARA ANSIEDAD DE ESFUMADORES
+
+*M DE BOX: Ho: hay homeneidad en la media de grupos (Matrices de covarianzas de la poblacion son iguales) 
+AUTOVALOR: cual funcion es más util
+
+
+DISCRIMINANT
+  /GROUPS=ansiedad(1 3)
+  /VARIABLES=X1 X2 X3
+  /ANALYSIS ALL
+  /SAVE=CLASS 
+  /PRIORS EQUAL 
+  /STATISTICS=MEAN STDDEV UNIVF BOXM 
+  /PLOT=COMBINED 
+  /CLASSIFY=NONMISSING POOLED.
+
+
+**/////////////////NOTA: USAR ESTA FUNCION ANTES DE USAR UNA 2DA BASE E DATOS, SI NECESITAREMOS TRABAJAR SOBRE LO YA HECHO
+
+TITLE PRACTICA DISCRIMINANTE 2 ADRIAN DELGADO.
+
+SAVE OUTFILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\tareas\DISCRIMINANTE 2_27 OCT'
+/COMPRESSED.
+*////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+*#############SALVAMOS LA HOJA DE RESULTADOS 
+
+OUTPUT SAVE NAME=Documento1
+ OUTFILE='C:\Users\Adrian\Documents\UMSS\seminario de estadistica\tareas\RESULTADOS '+
+    'DISCRIMINANTE.spv'
+ LOCK=NO.
