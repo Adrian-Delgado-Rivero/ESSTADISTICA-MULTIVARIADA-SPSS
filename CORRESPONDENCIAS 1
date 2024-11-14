@@ -1,0 +1,163 @@
+* Encoding: UTF-8.
+*############################    ANALISIS DE CORRESPONDENCIA    #####################################################
+
+*
+                                                    ///////////consideraciones//////////////////////////////////////
+                                                    ///1)     usan porcentajes                                //////
+                                                    ///2)    DATOS     cualitativos                         //////
+                                                    ///3)    mapas perceptales                             //////
+                                                    ///4)    chi cuadrados                                    //////
+                                        //////////////////////    OBJETIVOS ////////////////////////////////////////////////////////////
+                                        //1) FORMAR GRUPOS Y CORRELACIONES CUALITATIVAS            //
+                                        //2) DECRIBIR RELACIONES ENTRE VARIABLES CATEGORICAS    //
+                                        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    
+*1.Abrimos la base de datos correspondencia1
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\correspondencias1.sav '.
+*___________________________________________________________________________________________
+
+*2. Observamos la freceuncia de las categorias ()
+
+FREQUENCIES VARIABLES=preocupaciones estadocivil
+  /ORDER=ANALYSIS.
+
+*3. Analisis de correspondencias
+INSTRUCCIONES: 
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                       (    TABLE=preocupaciones(1 4) BY estadocivil(1 3)    )
+                    Fila: preocupaciones (1;4)
+                    Columna: Estado Civil (1;3)
+                    
+                    *MODELO:
+                            numero de diensiones: el menor numero de dimenciones que hay
+                                    rango menor; en este caso 3-1 =(2)             (  /DIMENSIONS=2)
+                            medida de distancia: chi cuadrado                        ( /MEASURE=CHISQ)
+                            metodo de normalizacion:
+                                Generalmente se usara: simetrico                    (  /NORMALIZATION=SYMMETRICAL)
+                                
+                    *ESTADISTICOS:                                                ( /PRINT=TABLE RPOINTS CPOINTS)
+                            correspondencias ::::::totales marginales (suma de filas y columanas)        (TABLE)
+                            puntos de fila:::::::porcentaje respecto a la fila                                        (RPOINTS)
+                            puntos de columna:::::::porcentaje respecto a las columna                    (CPOINTS)
+                            
+                    *GRAFICO:
+                           Diagrama de dispercion marginal                       ( /PLOT=NDIM(1,MAX) BIPLOT(20).) 
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CORRESPONDENCE TABLE=preocupaciones(1 4) BY estadocivil(1 3)
+  /DIMENSIONS=2
+   /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS
+  /PLOT=NDIM(1,MAX) BIPLOT(20).
+
+*$$$$$$$$$$$$$$$$$$$PARA INTERPRETAR RESULTADOS$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+*Tabla de correspondencias: similar a una tabla de frecuencias con la suma por cada fila y  cada   columna
+
+*TABLA RESUMEN: chi cuadrado, sig <0.05, para que sea valido
+    
+*Perfiles                 || [se añade en el siguiente comando] 
+    # de categorias en las columnas; si son cuatro lo que nos interesa es aquellas que sean mayores a 25%
+    # de categorias en las filas, si son 3  entonces nos interesan  aquellas que sean mayores al 33%
+
+*Inercia: como se relacionan los datos (aproximan o se distancian los datos)
+
+*Puntos de fila (o columna generales)
+        Proporcion de inercia del punto en la inercia de la dimencion      ||    [interesarnos en los valores altos]
+        
+*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+*MODIFICACION DE INSTRUCCIONES:
+        añadir en estadisticos el Perfil Fila  (RPROFILES) y el Perfil columna (CPROFILES)
+
+CORRESPONDENCE TABLE=preocupaciones(1 4) BY estadocivil(1 3)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20).
+
+*
+*MODIFICACION DE INSTRUCCIONES:
+graficos: individulaes
+        ptos fila (RPOINTS(20) )
+        ptos columna (CPOINTS(20 ))
+
+CORRESPONDENCE TABLE=preocupaciones(1 4) BY estadocivil(1 3)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20) RPOINTS(20) CPOINTS(20).
+
+**___________________________________________________________________________________________
+
+*################################ESCALAMIENTO OPTIMO#########################################
+*
+                        ////////////////////////////////INFORMACION IMPORTANTE////////////////////////////////
+                                 se usa cuando existen más de 2 variables categoricas
+                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+*1.Abrimos la base de datos correspondencia2
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\correspondencias2.sav '.
+*___________________________________________________________________________________________
+
+*2. frecuecnias    para obserar las categorias
+
+FREQUENCIES VARIABLES=preocupaciones estadocivil sexo
+  /ORDER=ANALYSIS.
+
+*INSTRUCCIONES:
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        Disposiciones previas: 
+        Nvl de escalamiento optimo: Todas las variables son nominales multiples
+        # de conjunto de cariables: Un conjunto
+        
+*       Definir ponderacion de la variable =1         (WEIGHT=1)
+*       NO SE MODIFICA NADA MÁS
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                
+
+MULTIPLE CORRES VARIABLES=preocupaciones estadocivil sexo
+  /ANALYSIS=preocupaciones(WEIGHT=1) estadocivil(WEIGHT=1) sexo(WEIGHT=1) 
+  /MISSING=preocupaciones(PASSIVE,MODEIMPU) estadocivil(PASSIVE,MODEIMPU) sexo(PASSIVE,MODEIMPU) 
+  /DIMENSION=2
+  /NORMALIZATION=VPRINCIPAL
+  /MAXITER=100
+  /CRITITER=.00001
+  /PRINT=CORR DISCRIM 
+  /PLOT=OBJECT(20) DISCRIM(20).
+
+**MODIFICACION DE INSTRUCCIONES:
+ añadir graficos de las 3 variables 
+                 categorias individuales         (CATEGORY(preocupaciones estadocivil sexo) (20) )
+                  conjuntas                         (JOINTCAT(preocupaciones estadocivil sexo) (20))
+
+
+
+MULTIPLE CORRES VARIABLES=preocupaciones estadocivil sexo
+  /ANALYSIS=preocupaciones(WEIGHT=1) estadocivil(WEIGHT=1) sexo(WEIGHT=1) 
+  /MISSING=preocupaciones(PASSIVE,MODEIMPU) estadocivil(PASSIVE,MODEIMPU) sexo(PASSIVE,MODEIMPU) 
+  /DIMENSION=2
+  /NORMALIZATION=VPRINCIPAL
+  /MAXITER=100
+  /CRITITER=.00001
+  /PRINT=CORR DISCRIM 
+  /PLOT=OBJECT(20) CATEGORY(preocupaciones estadocivil sexo) (20) JOINTCAT(preocupaciones 
+    estadocivil sexo) (20) DISCRIM (20).
+
+*$ NO HUBO INTERPETACION 
+
+*__________________________________________________________________________________________
+
+* reisar la tarea  hasta el domingo        correspondecias 3 y 4
