@@ -1,0 +1,399 @@
+*                                            T2 HOTELLING
+
+*1.-############################  abrimos la base de datos  ANTICO-1-############################ 
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\practicas 1 y 2\bases practica 1\ANTICO-1.sav '. 
+
+*2 -############################     Usamos descriptivos para realizar un **analisis univariante** de las variables elegidas-############################ 
+
+
+*ESTRUCTURA DEL CODIGO:                       
+                       1)Estandarizamos las variables y guardamos las puntuaciones Z
+                        2) estadisticos 
+                        
+DESCRIPTIVES VARIABLES=coles calcio a.urico
+    /SAVE
+    /STATISTICS=MEAN SUM STDDEV VARIANCE RANGE MIN MAX SEMEAN KURTOSIS SKEWNESS.
+
+*  Si nos piden  ordenar los resultados, lo hacemos añadiendo uno de los siguientes codigos  al final de la anterior instruccion
+  /SORT=NAME (A).        ORDENAR POR NOMBRE ALFABETICO
+  /SORT=MEAN (A).        ORDENAR POR MEDIAS ASCENDENTES
+  /SORT=MEAN (D).        ORDENAR POR MEDIAS DESCENDENTES
+  
+
+
+*3 -############################  sacamos las correlaciones-############################ -############################ 
+*ESTRUCTURA DEL CODIGO:  
+                1) variables
+                2) tipo de correlacion    +    # de colas    + señalar o no las correlaciones significativas
+                3) estadisticos
+                4) excluir caos [valores predidos]
+                
+CORRELATIONS
+  /VARIABLES=coles calcio
+  /PRINT=TWOTAIL NOSIG
+  /STATISTICS DESCRIPTIVES XPROD
+  /MISSING=PAIRWISE.
+
+*//////////////////////////////////////////////////////// //// CORRELACION PARAMETRICA//////////////////////////////////////////////////////// ///// [para pearson]    
+                       /PRINT= [#]TAIL                 [NO]SIG          
+                    (P.Significacion)           [no]  no señalar las correlaciones significativa         [NO]*NO =SÍ  _v_  ~(~F)=V  
+                    ejmplo: 
+                                  /PRINT=TWOTAIL NOSIG                Prueba de significacion bilateral [dos colas]
+                                  /PRINT=ONETAIL NOSIG                 Prueba de significacion  unilateral [una cola]
+                                  /PRINT=ONETAIL SIG                        no señalar las correlaciones significativa [una cola]
+                                  /PRINT=TWOTAIL SIG                   no señalar las correlaciones significativa [dos colas]
+                                  
+*Estadisticos
+                                      /STATISTICS DESCRIPTIVES            medias y desviaciones estandar
+                                      /STATISTICS XPROD                        desviaciones e productos vectoriales y covarianzas
+*Excluir casos segun [valores perdidos]:
+                                  /MISSING=PAIRWISE.            pareja 
+                                  /MISSING=LISTWISE.             lista
+                                  
+NONPAR CORR
+  /VARIABLES=coles calcio
+  /PRINT=KENDALL ONETAIL SIG
+  /MISSING=PAIRWISE.
+
+**//////////////////////////////////////////////////////// /CORRELACION NO PARAMETRICA// /////////////////////////////////////// /////[para sperman y kendall]       
+                         /PRINT=   [_______]                      [#]TAIL                 [NO]SIG          
+                                              (tipo de correlacion)               (P.Significacion)           [no]  no señalar las correlaciones significativa  
+                          ejemplo:   para una cola y señalndo las correlaciones significativas                      
+                              /PRINT=KENDALL ONETAIL SIG                     correlacion de  kendall
+                              /PRINT=SPEARMAN ONETAIL SIG                 correlacion de  spearan
+                              /PRINT=BOTH ONETAIL SIG                           ambas correlaciones 
+*NOTA1: Estas correlaciones no indican los estadisticos seleccionados en opciones
+*NOTA 2: Si queremos usar las correlacion de pearson y cualquiera de las no parametricas el codigo es el siguiente:  
+
+                        CORRELATIONS
+                          /VARIABLES=coles calcio
+                          /PRINT=ONETAIL SIG
+                          /STATISTICS DESCRIPTIVES XPROD
+                          /MISSING=PAIRWISE.
+                        NONPAR CORR
+                          /VARIABLES=coles calcio
+                          /PRINT=BOTH ONETAIL NOSIG  
+                          /MISSING=PAIRWISE.
+                        
+*4.- -############################ -############################    PRUEBAS T-############################ -############################ 
+*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+*      4.1. El procedimiento Prueba T para una muestra contrasta si la media de una sola variable difiere de una constante especificada.
+
+*ESTRUCTURA DEL CODIGO:
+              1) Valor con el que se va comparar
+               2)excluir caos [valores predidos]
+               3)variable a usar
+                4) Intervalo de confianza
+                                
+T-TEST
+  /TESTVAL=0
+  /MISSING=ANALYSIS
+  /VARIABLES=Zcoles
+  /CRITERIA=CI(.95).
+
+     *EXCLUIR SEGUN: 
+                                                                                                   /MISSING=ANALYSIS            segun analisis
+                                                                                                     /MISSING=LISTWISE            segun lista
+
+*////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*            4.2. El procedimiento Prueba T para muestras independientes compara las medias   de dos grupos de casos
+
+*+Descriptivos (media, error tipico, intervalo de confianza), 
+  +prueba de Levene sobre la igualdad de Varianzas 
+  +las pruebas t de varianzas combinadas y separadas sobre la igualdad de las medias.
+
+*NOTA:     Para esta prueba, idealmente los sujetos deben asignarse aleatoriamente a dos grupos, 
+                de forma que cualquier diferencia en la respuesta sea debida al tratamiento (o falta de tratamiento) y no a otros factores.
+            
+*ejemplo: diferencia de salarios por sexo [el sexo no se asigna aleatoriamente], onservar la influencia de otros factores, como ser Estudios 
+           
+
+*paso 1: usamos el descriptivo para determianr el rango de las variables dde agrupacion 
+
+DESCRIPTIVES VARIABLES= grupo  albumin
+    /STATISTICS=MEAN SUM STDDEV VARIANCE RANGE MIN MAX SEMEAN KURTOSIS SKEWNESS.
+
+*paso 2: prueba T
+*estructura del codigo 
+        *1) Excluir casos segun [valores perdidos]
+        *2) Variables
+        *3) Intervalo de Confianza
+        
+T-TEST GROUPS=grupo(1 2)
+  /MISSING=ANALYSIS
+  /VARIABLES=Zcoles Zcalcio
+  /CRITERIA=CI(.95).
+
+*Variablesde agrupacion:
+                    GROUPS=grupo(1 2)            utilizar valores especificados (grupo 1 y prupo 2)
+                    GROUPS=grupo(1)                punto de corte
+
+*EXCLUIR SEGUN: 
+                                       /MISSING=ANALYSIS            segun analisis
+                                      /MISSING=LISTWISE            segun lista
+
+*//////////////////////////////////////////////////////// //////////////////////////////////////////////////////// //////////////////////////////////////////////////////// ////////////////////////////////////////////////////////
+    *4.3. El procedimiento Prueba T para muestras relacionadas compara las medias de dos variables de un solo grupo.
+
+*+Calcula las diferencias entre los valores de las dos variables de cada caso y contrasta si la media difiere de 0.
+*+Para cada variable dará: descriptivos (media,desviacion tipica, error tipicode la media), tamaño de la muestra
+*+Para cada pareja de variables dará: correlacion, diferencia entre las medias, la prueba t, intervalo de confianza (para la diferencia de medias)
+    desviacion tipico y el error tipico de la diferencia entre las medias
+
+             
+*Estructura del codigo 
+        *1) Variables pares=V1 con V2 (emparejados)
+        *2) Intervalo de Confianza
+        *3) Excluir casos segun [valores perdidos]
+
+T-TEST PAIRS=Zcoles WITH Zcalcio (PAIRED)
+  /CRITERIA=CI(.9500)
+  /MISSING=ANALYSIS.
+
+*SI PAREAMOS VARIAS VARIABLES LA ESTRUCTURA DE 1) SERA:
+
+*                                T-TEST PAIRS=Zcoles Za.urico Zcoles WITH Zcalcio Zcalcio Za.urico (PAIRED)
+
+*EXCLUIR SEGUN: 
+                                       /MISSING=ANALYSIS            segun analisis
+                                      /MISSING=LISTWISE            segun lista
+
+*//////////////////////////////////////////////////////// //////////////////////////////////////////////////////// //////////////////////////////////////////////////////// /////
+.
+*5. ####################  ####################  MODELO LINEAL GENERAL MULTIVARIANTE####################  
+
+*Proporciona:     analisis de regresion     y     analisis de varianza para variables dependientes múltiples por una o más covariantes o variables factor
+
+*glosario:
+     Variable factor: divide la poblacion en grupos 
+
+*+efectos de las variables factor sobre las medias de varias agrupaciones de una distribucion copnjunta e variables dependientes
++interacciones entre los factores y los efectos individuales de los factores
++efectos de las covariantes y las interacciones de covariables con los factores
+
+
+
+*Los factores inter-sujetos dividen la muestra en subgrupos discretos, como hombre y mujer. Estos factores son categóricos 
+        y pueden tener valores numéricos o valores de cadena. 
+*Los factores intra-sujetos se definen en el cuadro de diálogo GLM Medidas repetidas: Definir factores.
+
+*NOTA: nos interesadejarlo simple para obtener de manera directa las pruebas multivariante de: 
+            Traza de Pillai
+            Lamda de Wilks
+            Traza de Hotelling
+            Raiz mayor de Ror
+
+GLM coles calcio a.urico
+  /METHOD=SSTYPE(3)
+  /INTERCEPT=INCLUDE
+  /CRITERIA=ALPHA(.05).
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                        Añadido sobre el codigo y opciones disponibles
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+*ESTRUCTURA DEL CODIGO:
+1)CREARESTAISTICOS DE LOS COEFICIENTES      
+                       [CONDICIOANDO A   /SAVE=PRED ]              (DATASET DECLARE  ESTA_COEF.)                 
+2) modelo    variables        BY Variable factor        WITH covariables
+3)ponderacio MPC                                           
+                  [opcional]                  (  /REGWGT=variable)                             
+4) metodo= tipo de suma de cuadrados                                                                              
+                                                (  /METHOD=SSTYPE(3))
+5) intercepto                                                                         
+                                                (  /INTERCEPT=INCLUDE or EXCLUDE)
+6)GUARDAR       
+             [OPCIONAL]            (/SAVE=PRED SEPRED RESID ZRESID SRESID DRESID COOK LEVER)     
+        6.1) [ CONDICIOANDO A  /SAVE=PRED)]           
+                  [Opcional]               (   /OUTFILE=COVB(ESTA_COEF))
+7)post hoc                                             
+                    [Opcional]                 (/POSTHOC=Variable factor(metodos)
+8) Grafico de factores                              
+                   [Opcional]               (  /PLOT=PROFILE(grupo*albumin) TYPE=LINE ERRORBAR=CI MEANREFERENCE=YES YAXIS=0)
+9) MEDIAS MARGINALES                         
+                     [Opcional]                (OVERALL) [OPCIONAL]
+10) MEDIAS MARGINALES                      
+                      [OPCIONAL]         (Variable Factor) 
+11)OPCIONES                                       
+                     [OPCIONAL]         ( /PRINT=DESCRIPTIVE ETASQ OPOWER PARAMETER TEST(SSCP) RSSCP TEST(MMATRIX) HOMOGENEITY LOF GEF)
+     11.1)Grafico de errores                
+                     [Opcional]             ( /PLOT=SPREADLEVEL RESIDUALS)         //solo si se selecciona las opciones de graficos
+12)Nivel de signifcacion    en 0.#                                            
+                  (  /CRITERIA=ALPHA(.05)  )    //     modificable en OPCIONES
+13) Factores y grafico                                                       
+                 (   /DESIGN= grupo albumin grupo*albumin. )
+
+DATASET DECLARE  ESTA_COEF.
+GLM coles a.urico calcio BY grupo albumin
+  /METHOD=SSTYPE(3)
+  /INTERCEPT=INCLUDE
+  /SAVE=PRED SEPRED RESID ZRESID SRESID DRESID COOK LEVER
+  /OUTFILE=COVB(ESTA_COEF)
+  /POSTHOC=grupo(SNK TUKEY BTUKEY DUNCAN SCHEFFE LSD BONFERRONI SIDAK GABRIEL FREGW QREGW GT2 T2 T3 
+    GH C WALLER(100) DUNNETT) 
+  /PLOT=PROFILE(grupo*albumin) TYPE=LINE ERRORBAR=CI MEANREFERENCE=YES YAXIS=0  
+  /EMMEANS=TABLES(OVERALL) 
+  /EMMEANS=TABLES(grupo) 
+  /PRINT=DESCRIPTIVE ETASQ OPOWER PARAMETER TEST(SSCP) RSSCP TEST(MMATRIX) HOMOGENEITY LOF GEF
+  /PLOT=SPREADLEVEL RESIDUALS 
+  /CRITERIA=ALPHA(.05)
+  /DESIGN= grupo albumin grupo*albumin.
+
+
+*NOTA: si tenemos variables en Covaraibles se desactiva el Post Hoc
+
+*//////////////////////////////////////////////////////// //// //////////////////////////////////////////////////////// //// //////////////////////////////////////////////////////// ////
+
+*POST HOC
+  VARIABLES FACTORES(pruebas Post Hoc)
+  
+*             ASUMIENDO VARIANZAS IGUALES
+                     LSD(DMS)     BONFERRONI    SIDAK    SCHEFFE     FREGW     QREGW
+                     SNK    TUKEY    BTUKEY (Tukey-b)    DUCAN    GT2(GT2 e Hochnerg)    GABRIEL
+                      WALLER(wallter-duncan)100 [tasa de errores tipo I/tipo II]        DUNNETT(bilateral)     DUNNETTL(<control)    /    DUNNETTR(1)  (>control)      [1= PRIMERO, SN= ULTIMO]
+              
+ *             NO ASUMIENDO VARIANZAS IGUALES
+                      T2        T3        GH(games-howell)        C(c de Dunnet)
+                      
+*APUNTE:             ¿Para que sirve cada prueba?
++Las pruebas que se muestran son: COMPARACIONES POR PAREJAS para DMS, Sidak, Bonferroni, Games y Howell, T2 y T3 de Tamhane, C y T3 de Dunnett.
+*+También se facilitan SUBCONJUNTOS HOMOGENEOS para las PRUEBAS DE RANGO para S-N-K, Tukey-b, Duncan, R-E-G-W F, R-E-G-W Q y Waller.
+*+La prueba de la diferencia honestamente significativamente de Tukey, GT2 de Hochberg, la prueba de Gabriel y la prueba de Scheffé son tanto pruebas
+                        de COMPARACIONE SMULTIPLES como de RANGO.
+                
+*//////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////
+*INTERCEPTO DEL MODELO
+          /INTERCEPT=INCLUDE        incluido
+          /INTERCEPT=EXCLUDE        Excluido
+
+*//////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////
+*MEDIDAS MARGINALES ESTIMADAS         //Estas medias se corrigen respecto a las covariables,
+
+*                           sin covariables
+               /EMMEANS=TABLES(OVERALL) 
+              /EMMEANS=TABLES(grupo) 
+
+*                          con covariables
+              /EMMEANS=TABLES(OVERALL) WITH(albumin=MEAN) 
+              /EMMEANS=TABLES(grupo) WITH(albumin=MEAN) COMPARE ADJ(LSD)
+
+*   AÑADIDO:    comparar los efectos principales [colocados despues del parentesis]
+                            ADJ(BONFERRONI)
+                            COMPARE ADJ(LSD) [ninguna]
+                            OMPARE ADJ(SIDAK)
+
+*APUNTE:
++Proporciona comparaciones por parejas no corregidas entre las medias marginales estimadas para
+cualquier efecto principal del modelo, tanto para los factores intersujetos como para los intra-sujetos.
+*//////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////
+*GRAFICOS: [FACTORES]
+            EJE HORIZONAL (GRUPO)
+            LINEAS SEPARADAS(ALUMINIUM)
+
+*            TIPO DE GRAFICO: 
+                 TYPE=LINE            grafico de lineas 
+                 TYPE=BAR            grafico e barras
+            
+*             BARRAS DE ERROR
+                 ERRORBAR=N                    SIN BARRAS DE ERROR                    
+                 LINE ERRORBAR=CI            INTERVALO DE CONFIANZA (95%)
+                 ERRORBAR=SE(2)                ERROR ESTANDAR, MULTIPLICADOR 2
+     
+*                 INCLUIR LINEA DE REFERENCIA PARA MEDIA GLOBAL
+                     MEANREFERENCE=NO             no
+                     MEANREFERENCE=YE             si
+ 
+*                     EJE Y EMPIEZA EN 0
+                        YAXIS=0            Empieza en 0
+                        YAXIS=AUTO     no empieza en 0
+                        
+*                                    NOTA: para graficos de barras se omite
+                    
+**//////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////
+    OPCIONES
+    visualitacion
+    DESCRIPTIVE (estadistico descriptivo)       ETASQ (estimacion del tamaño del efecto)         OPOWER (potencia observada)        
+                                         PARAMETER(estimaciones de los parámetros)       TEST(SSCP)[matrices SSCP]     RSSCP(matriz SSCP de residuos) 
+    TEST(MMATRIX)[Matiz de transformacion]    HOMOGENEITY(pruebas de homogeneidad)     LOF(falta de ajuste)    GEF(funcion estable general)
+         GRAFICOS: 
+          SPREADLEVEL (grafico de dispercion  versus grafico de niveles)       RESIDUALS (grafico de residuos)
+*APUNTE:
++estimacion del tamaño del efecto: valor ETA CUADRADO para cada efecto y estimacion de parametros//
+            ETA CUADRADO:propircion de araibilidad total atribuible a un factor
++potencia observada:potencia de la prueba cuando la hipótesis alternativa se ha establecido basandose en el valor observado
++estimaciones de los parámetros:  estimaciones de los parámetros, los errores típicos, las pruebas t, los intervalos de confianza   y la potencia observada para cada prueba.
+*                +matrices SSCP de error y de hipotesis, matriz SSCP de residuos, esfericidad de BARTLETT, Matriz de Covarinza residual    
++Pruebas de homogeneidad: 
+                    ++Homogeneidad de varianzas de Levene    variable dependiente en todas las combinaciones de nivel de los factores inter-sujetos s´olo para factores inter-sujetos.
+*                    ++Prueba M de Box sobre la homogeneidad de las matrices de covarianzas de las variables dependientes a lo largo de todas las combinaciones
+                                    de niveles de los factores inter-sujetos. Las opciones de diagramas de dispersi´on por nivel y gr´afico de los
++Grafica de residuos: pronosticados y estandarizados //utiles para investigar el supuesto e varianza iguales
++Prueba de flata de ajuste: R2                      
+
+
+**//////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////
+GUARDAR
+    
+*    valores pronosticados           // valores predichos para cada caso//
+    PRED(valores pronosticaso no estandarizadas)   SEPRED(errores estandar de los valores pronosticados) 
+    
+*    diagnosticos                    //casos con combianciones poco usuales//
+    COOK(distacia de cook)    LEVER(valores de influencia no centrados)
+    
+*    residuos                   //e=Y-Ye, metodos// 
+    RESID(no estandarizados)   ZRESID (estandarisados)    SRESID(metodo de student)    DRESID(eliminados)
+    
+*    PRED(Estadistico de los coeficientes)    genera las siguienteslineas
+        DATASET DECLARE  p
+         /SAVE=PRED
+          /OUTFILE=COVB(p)
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------      
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
