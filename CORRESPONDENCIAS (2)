@@ -1,0 +1,278 @@
+ Encoding: UTF-8.
+*############################    ANALISIS DE CORRESPONDENCIA    #####################################################
+
+*
+                                                    ///////////consideraciones//////////////////////////////////////
+                                                    ///1)     usan porcentajes                                //////
+                                                    ///2)    DATOS     cualitativos                         //////
+                                                    ///3)    mapas perceptales                             //////
+                                                    ///4)    chi cuadrados                                    //////
+                                        //////////////////////    OBJETIVOS ////////////////////////////////////////////////////////////
+                                        //1) FORMAR GRUPOS Y CORRELACIONES CUALITATIVAS            //
+                                        //2) DECRIBIR RELACIONES ENTRE VARIABLES CATEGORICAS    //
+                                        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    
+*1.Abrimos la base de datos correspondencia1
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\encinf.sav '.
+*___________________________________________________________________________________________
+
+*2. Observamos la freceuncia de las categorias ()
+
+FREQUENCIES VARIABLES=   género   tipo internet gasto prog
+  /ORDER=ANALYSIS.
+
+*3. Analisis de correspondencias
+INSTRUCCIONES: 
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                       CORRESPONDENCE TABLE= prog(1 4) BY  internet(1 2)
+                    Fila: prog (1;4)
+                    Columna: Estado internet (1;2)
+                    
+                    *MODELO:
+                            numero de diensiones: el menor numero de dimenciones que hay
+                                    rango menor; en este caso 2-1 =(2)             (  /DIMENSIONS=1)
+                            medida de distancia: chi cuadrado                        ( /MEASURE=CHISQ)
+                            metodo de normalizacion:
+                                Generalmente se usara: simetrico                    (  /NORMALIZATION=SYMMETRICAL)
+                                
+                    *ESTADISTICOS:                                                ( /PRINT=TABLE RPOINTS CPOINTS)
+                            correspondencias ::::::totales marginales (suma de filas y columanas)        (TABLE)
+                            puntos de fila:::::::porcentaje respecto a la fila                                        (RPOINTS)
+                            puntos de columna:::::::porcentaje respecto a las columna                    (CPOINTS)
+                            
+                    *GRAFICO:
+                           Diagrama de dispercion marginal                       ( /PLOT=NDIM(1,MAX) BIPLOT(20).) 
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CORRESPONDENCE TABLE= prog(1 4) BY  internet(1 2)
+  /DIMENSIONS=1
+   /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20) RPOINTS(20) CPOINTS(20).
+
+
+
+CORRESPONDENCE TABLE=internet(1 2) BY prog(1 4)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20) RPOINTS(20) CPOINTS(20).
+ 
+
+
+CORRESPONDENCE TABLE=tipo(1 3) BY prog(1 4)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20) RPOINTS(20) CPOINTS(20).
+*$$$$$$$$$$$$$$$$$$$PARA INTERPRETAR RESULTADOS$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+*Tabla de correspondencias: similar a una tabla de frecuencias con la suma por cada fila y  cada   columna
+
+*TABLA RESUMEN: chi cuadrado, sig <0.05, para que sea valido
+    
+*Perfiles                 || [se añade en el siguiente comando] 
+    # de categorias en las columnas; si son cuatro lo que nos interesa es aquellas que sean mayores a 25%
+    # de categorias en las filas, si son 3  entonces nos interesan  aquellas que sean mayores al 33%
+
+*Inercia: como se relacionan los datos (aproximan o se distancian los datos)
+
+*Puntos de fila (o columna generales)
+        Proporcion de inercia del punto en la inercia de la dimencion      ||    [interesarnos en los valores altos]
+        
+*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+*MODIFICACION DE INSTRUCCIONES:
+        añadir en estadisticos el Perfil Fila  (RPROFILES) y el Perfil columna (CPROFILES)
+
+CORRESPONDENCE TABLE=preocupaciones(1 4) BY estadocivil(1 3)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20).
+
+*
+*MODIFICACION DE INSTRUCCIONES:
+graficos: individulaes
+        ptos fila (RPOINTS(20) )
+        ptos columna (CPOINTS(20 ))
+
+CORRESPONDENCE TABLE=preocupaciones(1 4) BY estadocivil(1 3)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES
+  /PLOT=NDIM(1,MAX) BIPLOT(20) RPOINTS(20) CPOINTS(20).
+
+**___________________________________________________________________________________________
+
+*################################ESCALAMIENTO OPTIMO#########################################
+*
+                        ////////////////////////////////INFORMACION IMPORTANTE////////////////////////////////
+                                 se usa cuando existen más de 2 variables categoricas
+                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+*1.Abrimos la base de datos correspondencia2
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\correspondencias2.sav '.
+*___________________________________________________________________________________________
+
+*2. frecuecnias    para obserar las categorias
+
+FREQUENCIES VARIABLES=preocupaciones estadocivil sexo
+  /ORDER=ANALYSIS.
+
+*INSTRUCCIONES:
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        Disposiciones previas: 
+        Nvl de escalamiento optimo: Todas las variables son nominales multiples
+        # de conjunto de cariables: Un conjunto
+        
+*       Definir ponderacion de la variable =1         (WEIGHT=1)
+*       NO SE MODIFICA NADA MÁS
+*         añadir graficos de las 3 variables 
+                 categorias individuales         (CATEGORY(preocupaciones estadocivil sexo) (20) )
+                  conjuntas                         (JOINTCAT(preocupaciones estadocivil sexo) (20))
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                
+
+MULTIPLE CORRES VARIABLES=prog tipo internet género
+  /ANALYSIS=prog(WEIGHT=1) tipo(WEIGHT=1) internet(WEIGHT=1) género(WEIGHT=1) 
+  /MISSING=prog(PASSIVE,MODEIMPU) tipo(PASSIVE,MODEIMPU) internet(PASSIVE,MODEIMPU) 
+    género(PASSIVE,MODEIMPU) 
+  /DIMENSION=2
+  /NORMALIZATION=VPRINCIPAL
+  /MAXITER=100
+  /CRITITER=.00001
+  /PRINT=CORR DISCRIM 
+  /PLOT=BIPLOT(20) OBJECT(20) CATEGORY(género tipo internet prog) (20) JOINTCAT(género tipo 
+    internet prog) (20) DISCRIM (20).
+
+**MODIFICACION DE INSTRUCCIONES:
+ añadir graficos de las 3 variables 
+                 categorias individuales         (CATEGORY(preocupaciones estadocivil sexo) (20) )
+                  conjuntas                         (JOINTCAT(preocupaciones estadocivil sexo) (20))
+
+*$ NO HUBO INTERPETACION 
+
+*__________________________________________________________________________________________
+
+* reisar la tarea  hasta el domingo        correspondecias 3 y 4
+
+ 
+
+GET
+ FILE='C:\Users\Adrian\Documents\UMSS\Seminario de estadistica\bases de datos\ENCTRAN.sav '.
+ 
+
+FREQUENCIES VARIABLES=curso genero resid trans vehiculo
+  /ORDER=ANALYSIS.
+
+CORRESPONDENCE TABLE=curso(1 2) BY trans(1 7)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES RCONF CCONF
+  /PLOT=NDIM(1,MAX) BIPLOT(20).
+
+*transformamos una variable cuanti en cuali
+
+DESCRIPTIVES VARIABLES=tiempo
+  /STATISTICS=MEAN STDDEV MIN MAX.
+
+RECODE tiempo (Lowest thru 25=1) (26 thru 50=2) (51 thru 75=3) (76 thru Highest=4) INTO Tiempo_Rec.
+VARIABLE LABELS  Tiempo_Rec 'tiempo recodificado'.
+EXECUTE.
+
+*colocamoslas etiquetas
+
+
+
+CORRESPONDENCE TABLE=trans(1 7) BY Tiempo_Rec(1 4)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES RCONF CCONF
+  /PLOT=NDIM(1,MAX) BIPLOT(20) TRROWS(20) TRCOLUMNS(20).
+
+
+
+
+
+
+
+DESCRIPTIVES VARIABLES=tiempes coste rapi
+  /STATISTICS=MEAN STDDEV MIN MAX.
+
+
+RECODE coste (Lowest thru 2000=1) (2001 thru 4000=2) (4001 thru 6000=3) (6001 thru 8000=4) (8001 
+    thru Highest=5) INTO costo_rec.
+VARIABLE LABELS  costo_rec 'costo recodificado'.
+EXECUTE.
+
+
+CORRESPONDENCE TABLE=Tiempo_Rec(1 4) BY costo_rec(1 5)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES RCONF CCONF
+  /PLOT=NDIM(1,MAX) BIPLOT(20).
+
+
+CORRESPONDENCE TABLE=trans(1 7) BY costo_rec(1 5)
+  /DIMENSIONS=2
+  /MEASURE=CHISQ
+  /STANDARDIZE=RCMEAN
+  /NORMALIZATION=SYMMETRICAL
+  /PRINT=TABLE RPOINTS CPOINTS RPROFILES CPROFILES RCONF CCONF
+  /PLOT=NDIM(1,MAX) BIPLOT(20).
+
+
+MULTIPLE CORRES VARIABLES=trans Tiempo_Rec costo_rec
+  /ANALYSIS=trans(WEIGHT=1) Tiempo_Rec(WEIGHT=1) costo_rec(WEIGHT=1) 
+  /MISSING=trans(PASSIVE,MODEIMPU) Tiempo_Rec(PASSIVE,MODEIMPU) costo_rec(PASSIVE,MODEIMPU) 
+  /DIMENSION=2
+  /NORMALIZATION=VPRINCIPAL
+  /MAXITER=100
+  /CRITITER=.00001
+  /PRINT=CORR DISCRIM 
+  /PLOT=OBJECT(20) DISCRIM(20).
+
+OVERALS
+  /VARIABLES=trans(7) Tiempo_Rec(4) costo_rec(5)
+  /ANALYSIS=trans(ORDI) Tiempo_Rec(ORDI) costo_rec(ORDI)
+  /SETS 3 (1, 1, 1)
+  /DIMENSION=2
+  /PRINT FREQ CENTROID FIT QUANT
+  /PLOT OBJECT LOADINGS NDIM(1,MAX)
+  /MAXITER=100
+  /CONVERGENCE=.00001
+  /INITIAL=NUMERIC.
+
+OVERALS
+  /VARIABLES=trans(7) Tiempo_Rec(4) costo_rec(5) num(114)
+  /ANALYSIS=trans(ORDI) Tiempo_Rec(ORDI) costo_rec(ORDI)
+  /SETS 3 (1, 1, 1)
+  /DIMENSION=2
+  /PRINT FREQ CENTROID FIT QUANT
+  /PLOT OBJECT(num) LOADINGS NDIM(1,MAX)
+  /MAXITER=100
+  /CONVERGENCE=.00001
+  /INITIAL=NUMERIC
